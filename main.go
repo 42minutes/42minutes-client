@@ -74,7 +74,7 @@ func PushShows(shows []*models.UserFile) {
 	// fmt.Println("response Headers:", resp.Header)
 	ioutil.ReadAll(resp.Body)
 	// fmt.Println("response Body:", string(body))
-	fmt.Printf("Pushed %d filenames.\n", len(shows))
+	fmt.Printf("> Sent %d file descriptions.\n", len(shows))
 }
 
 func ScanForShows(tvpath string) {
@@ -87,11 +87,12 @@ func ScanForShows(tvpath string) {
 		if !f.IsDir() && !strings.HasPrefix(f.Name(), ".") {
 			userFile := models.UserFile{}
 			userFile.UserID = *apiToken
-			userFile.RelativePath = filePath // TODO Remove tvpath from fileAPth
+			userFile.RelativePath = strings.TrimPrefix(filePath, tvpath)
 			showFiles = append(showFiles, &userFile)
 			// fmt.Printf("Got %s\n", filePath)
 
-			if len(showFiles) > 100 {
+			if len(showFiles) >= 100 {
+				fmt.Printf("Sending %d file descriptions...", len(showFiles))
 				showFilesForPush := make([]*models.UserFile, 0)
 				for _, show := range showFiles {
 					showFilesForPush = append(showFilesForPush, show)
