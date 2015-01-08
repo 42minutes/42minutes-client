@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
 var (
@@ -78,6 +79,7 @@ func PushShows(shows []*models.UserFile) {
 }
 
 func ScanForShows(tvpath string) {
+	var wg sync.WaitGroup
 	showFiles := make([]*models.UserFile, 0)
 	filepath.Walk(tvpath, func(filePath string, f os.FileInfo, err error) error {
 		if err != nil {
@@ -90,22 +92,32 @@ func ScanForShows(tvpath string) {
 			userFile.RelativePath = strings.TrimPrefix(filePath, tvpath)
 			showFiles = append(showFiles, &userFile)
 			// fmt.Printf("Got %s\n", filePath)
-
-			if len(showFiles) >= 100 {
+			if len(showFiles) >= 50 {
 				fmt.Printf("Sending %d file descriptions...\n", len(showFiles))
 				showFilesForPush := make([]*models.UserFile, 0)
 				for _, show := range showFiles {
 					showFilesForPush = append(showFilesForPush, show)
 				}
-				PushShows(showFilesForPush)
+				wg.Add(1)
+				go func(files []*models.UserFile) {
+					PushShows(files)
+					wg.Done()
+
+				}(showFilesForPush)
 				showFiles = make([]*models.UserFile, 0)
 			}
 		}
 		return nil
 	})
 	if len(showFiles) > 0 {
-		PushShows(showFiles)
+		wg.Add(1)
+		go func(files []*models.UserFile) {
+			PushShows(files)
+			wg.Done()
+		}(showFiles)
 	}
+	wg.Wait()
+
 	fmt.Printf("Done sending filenames.\n")
 }
 
