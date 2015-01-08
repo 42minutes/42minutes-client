@@ -92,7 +92,7 @@ func ScanForShows(tvpath string) {
 			// fmt.Printf("Got %s\n", filePath)
 
 			if len(showFiles) >= 100 {
-				fmt.Printf("Sending %d file descriptions...", len(showFiles))
+				fmt.Printf("Sending %d file descriptions...\n", len(showFiles))
 				showFilesForPush := make([]*models.UserFile, 0)
 				for _, show := range showFiles {
 					showFilesForPush = append(showFilesForPush, show)
