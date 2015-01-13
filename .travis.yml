@@ -8,22 +8,15 @@ before_install:
 script:
 - go test -v
 after_success:
-- go get github.com/mitchellh/gox
-- gox -build-toolchain -os="windows linux freebsd darwin" -arch="386 amd64"
-- gox -output "dist/{{.Dir}}_{{.OS}}_{{.Arch}}" -os="windows linux freebsd darwin"
+  - go get github.com/laher/goxc
+  - goxc -t -bc="windows linux darwin,\!arm"
+  - goxc -pv=${TRAVIS_TAG} -n=minutes -bc="windows linux darwin,\!arm" -d="dist/" -o="{{.Dest}}{{.PS}}{{.Os}}_{{.Arch}}{{.PS}}{{.ExeName}}{{.Ext}}"
 deploy:
   provider: releases
   api_key:
     secure: wjqdiTdyrjdXETsvfEfHyGS7E/KnS8iqto+NdwRa/OWraUufp0oGoiPGwL3juzlorIbffJI+K0XDoZzX5JtLHG2PX4zzig3seF2ABd/KRlh1EXo2veYKixVM5+1WMjPvEkrfjeXOI9sEPmatcsoQqKa/HjXe7knbI00/kTqptF8=
-  file:
-    - "dist/42minutes-client_darwin_386"
-    - "dist/42minutes-client_darwin_amd64"
-    - "dist/42minutes-client_freebsd_386"
-    - "dist/42minutes-client_freebsd_amd64"
-    - "dist/42minutes-client_linux_386"
-    - "dist/42minutes-client_linux_amd64"
-    - "dist/42minutes-client_windows_386.exe"
-    - "dist/42minutes-client_windows_amd64.exe"
+  file_glob: true
+  file: ${HOME}/build/${TRAVIS_REPO_SLUG}/dist/${TRAVIS_TAG}/minutes_*
   on:
     repo: 42minutes/42minutes-client
     all_branches: true
