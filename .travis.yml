@@ -9,15 +9,14 @@ script:
 - go test -v
 after_success:
   - go get github.com/laher/goxc
-  - goxc -t -bc="windows linux darwin,\!arm"
-  - goxc -pv=${TRAVIS_TAG} -n=42minutes -bc="windows linux darwin,\!arm" -d="dist/"
-
+  - if [ -z "$TRAVIS_TAG" ]; then echo "Skipping build..."; else goxc -t -bc="windows linux darwin,\!arm"; fi
+  - if [ -z "$TRAVIS_TAG" ]; then echo "Skipping build..."; else goxc -pv=${TRAVIS_TAG:(1)} -n=42minutes -bc="windows linux darwin,\!arm" -d="dist/"; fi
 deploy:
   provider: releases
   api_key:
     secure: wjqdiTdyrjdXETsvfEfHyGS7E/KnS8iqto+NdwRa/OWraUufp0oGoiPGwL3juzlorIbffJI+K0XDoZzX5JtLHG2PX4zzig3seF2ABd/KRlh1EXo2veYKixVM5+1WMjPvEkrfjeXOI9sEPmatcsoQqKa/HjXe7knbI00/kTqptF8=
   file_glob: true
-  file: dist/${TRAVIS_TAG}/*
+  file: dist/${TRAVIS_TAG:(1)}/*
   on:
     repo: 42minutes/42minutes-client
     all_branches: true
