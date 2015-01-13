@@ -35,3 +35,4 @@ deploy:
   on:
     repo: 42minutes/42minutes-client
     all_branches: true
+    tags: true
