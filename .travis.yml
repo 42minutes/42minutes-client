@@ -34,3 +34,4 @@ deploy:
     - "dist/42minutes-client_windows_amd64.exe"
   on:
     repo: 42minutes/42minutes-client
+    all_branches: true
