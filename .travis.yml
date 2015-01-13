@@ -1,0 +1,37 @@
+language: go
+go:
+- '1.0'
+- '1.3'
+env:
+- PATH=/home/travis/gopath/bin:$PATH
+before_install:
+- go get github.com/mitchellh/gox
+- gox -build-toolchain
+- go get ./...
+script:
+- go test -v
+after_success:
+- gox -output "dist/{{.Dir}}_{{.OS}}_{{.Arch}}"
+deploy:
+  provider: releases
+  api_key:
+    secure: wjqdiTdyrjdXETsvfEfHyGS7E/KnS8iqto+NdwRa/OWraUufp0oGoiPGwL3juzlorIbffJI+K0XDoZzX5JtLHG2PX4zzig3seF2ABd/KRlh1EXo2veYKixVM5+1WMjPvEkrfjeXOI9sEPmatcsoQqKa/HjXe7knbI00/kTqptF8=
+  file:
+    - "dist/42minutes-client_darwin_386"
+    - "dist/42minutes-client_darwin_amd64"
+    - "dist/42minutes-client_freebsd_386"
+    - "dist/42minutes-client_freebsd_amd64"
+    - "dist/42minutes-client_freebsd_arm"
+    - "dist/42minutes-client_linux_386"
+    - "dist/42minutes-client_linux_amd64"
+    - "dist/42minutes-client_linux_arm"
+    - "dist/42minutes-client_netbsd_386"
+    - "dist/42minutes-client_netbsd_amd64"
+    - "dist/42minutes-client_netbsd_arm"
+    - "dist/42minutes-client_openbsd_386"
+    - "dist/42minutes-client_openbsd_amd64"
+    - "dist/42minutes-client_plan9_386"
+    - "dist/42minutes-client_windows_386.exe"
+    - "dist/42minutes-client_windows_amd64.exe"
+  on:
+    repo: 42minutes/42minutes-client

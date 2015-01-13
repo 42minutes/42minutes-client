@@ -4,16 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/42minutes/42minutes-server-api/models"
-	"gopkg.in/alecthomas/kingpin.v1"
-	"gopkg.in/fsnotify.v1"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/42minutes/42minutes-server-api/models"
+	"gopkg.in/alecthomas/kingpin.v1"
 )
 
 var (
@@ -24,35 +23,6 @@ var (
 	scan     = app.Command("scan", "Scan tv shows folder and report to 42minutes.")
 	scanPath = scan.Arg("path", "Tv show path.").Required().String()
 )
-
-func watch() {
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer watcher.Close()
-
-	done := make(chan bool)
-	go func() {
-		for {
-			select {
-			case event := <-watcher.Events:
-				log.Println("event:", event)
-				if event.Op&fsnotify.Write == fsnotify.Write {
-					log.Println("modified file:", event.Name)
-				}
-			case err := <-watcher.Errors:
-				log.Println("error:", err)
-			}
-		}
-	}()
-
-	err = watcher.Add("/Users/geoah/Workspace/Geoah/corn/tests/tv")
-	if err != nil {
-		log.Fatal(err)
-	}
-	<-done
-}
 
 func PushShows(shows []*models.UserFile) {
 	url := *apiUri + "files"
