@@ -4,13 +4,13 @@ go:
 env:
 - PATH=/home/travis/gopath/bin:$PATH
 before_install:
-- go get github.com/mitchellh/gox
-- gox -build-toolchain
 - go get ./...
 script:
 - go test -v
 after_success:
-- gox -output "dist/{{.Dir}}_{{.OS}}_{{.Arch}}" -os="windows linux darwin"
+- go get github.com/mitchellh/gox
+- gox -build-toolchain -os="windows linux freebsd darwin" -arch="386 amd64"
+- gox -output "dist/{{.Dir}}_{{.OS}}_{{.Arch}}" -os="windows linux freebsd darwin"
 deploy:
   provider: releases
   api_key:
@@ -20,16 +20,8 @@ deploy:
     - "dist/42minutes-client_darwin_amd64"
     - "dist/42minutes-client_freebsd_386"
     - "dist/42minutes-client_freebsd_amd64"
-    - "dist/42minutes-client_freebsd_arm"
     - "dist/42minutes-client_linux_386"
     - "dist/42minutes-client_linux_amd64"
-    - "dist/42minutes-client_linux_arm"
-    - "dist/42minutes-client_netbsd_386"
-    - "dist/42minutes-client_netbsd_amd64"
-    - "dist/42minutes-client_netbsd_arm"
-    - "dist/42minutes-client_openbsd_386"
-    - "dist/42minutes-client_openbsd_amd64"
-    - "dist/42minutes-client_plan9_386"
     - "dist/42minutes-client_windows_386.exe"
     - "dist/42minutes-client_windows_amd64.exe"
   on:
