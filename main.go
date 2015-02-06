@@ -21,8 +21,9 @@ var (
 	apiUri   = app.Flag("api", "API URI.").Default("http://localhost:8000/").String()
 	apiToken = app.Flag("token", "API User Token.").Required().String()
 
-	scan     = app.Command("scan", "Scan tv shows folder and report to 42minutes.")
-	scanPath = scan.Arg("path", "Tv show path.").Required().String()
+	scan         = app.Command("scan", "Scan tv shows folder and report to 42minutes.")
+	scanPath     = scan.Arg("path", "Tv show path.").Required().String()
+	videoSubExts = []string{"avi", "flv", "mkv", "wmv", "mov", "mp4", "sub", "srt"}
 )
 
 func watch() {
@@ -86,25 +87,38 @@ func ScanForShows(tvpath string) {
 			// TODO Log Error
 			return err
 		}
-		if !f.IsDir() && !strings.HasPrefix(f.Name(), ".") {
-			userFile := models.UserFile{}
-			userFile.UserID = *apiToken
-			userFile.RelativePath = strings.TrimPrefix(filePath, tvpath)
-			showFiles = append(showFiles, &userFile)
-			// fmt.Printf("Got %s\n", filePath)
-			if len(showFiles) >= 50 {
-				fmt.Printf("Sending %d file descriptions...\n", len(showFiles))
-				showFilesForPush := make([]*models.UserFile, 0)
-				for _, show := range showFiles {
-					showFilesForPush = append(showFilesForPush, show)
-				}
-				wg.Add(1)
-				go func(files []*models.UserFile) {
-					PushShows(files)
-					wg.Done()
 
-				}(showFilesForPush)
-				showFiles = make([]*models.UserFile, 0)
+		dotLastIndex := strings.LastIndex(f.Name(), ".")
+		if !f.IsDir() && !strings.HasPrefix(f.Name(), ".") && dotLastIndex > 0 {
+			isVideoOrSub := false
+			fileExt := f.Name()[dotLastIndex+1:]
+			for _, ext := range videoSubExts {
+				if ext == fileExt {
+					isVideoOrSub = true
+					break
+				}
+			}
+
+			if isVideoOrSub {
+				fmt.Println(f.Name())
+				userFile := models.UserFile{}
+				userFile.UserID = *apiToken
+				userFile.RelativePath = strings.TrimPrefix(filePath, tvpath)
+				showFiles = append(showFiles, &userFile)
+				if len(showFiles) >= 50 {
+					fmt.Printf("Sending %d file descriptions...\n", len(showFiles))
+					showFilesForPush := make([]*models.UserFile, 0)
+					for _, show := range showFiles {
+						showFilesForPush = append(showFilesForPush, show)
+					}
+					wg.Add(1)
+					go func(files []*models.UserFile) {
+						PushShows(files)
+						wg.Done()
+
+					}(showFilesForPush)
+					showFiles = make([]*models.UserFile, 0)
+				}
 			}
 		}
 		return nil
